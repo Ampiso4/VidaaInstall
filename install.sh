@@ -41,7 +41,7 @@ if pgrep -x VidaaInstall >/dev/null; then
   sleep 1
 fi
 
-say "Copie dans $DEST…"
+say "Copie dans ${DEST}…"
 rm -rf "${DEST:?}/$APP"
 ditto "$MNT/$APP" "$DEST/$APP"
 xattr -dr com.apple.quarantine "$DEST/$APP" 2>/dev/null || true
