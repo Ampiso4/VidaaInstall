@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VidaaInstall — première ouverture</title>
+<style>
+  :root{--navy:#091540;--royal:#1b2cc1;--peri:#7692ff;--sky:#abd2fa;--ink:#ffffff}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--navy);color:var(--ink);
+    font:15px/1.55 -apple-system,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+  .bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+  .bg i:nth-child(1){width:60vw;height:60vw;left:-15vw;top:-20vw;background:var(--royal);animation:d 24s ease-in-out infinite alternate}
+  .bg i:nth-child(2){width:50vw;height:50vw;right:-15vw;top:30vh;background:var(--peri);opacity:.4;animation:d 30s ease-in-out infinite alternate-reverse}
+  .bg i:nth-child(3){width:40vw;height:40vw;left:20vw;bottom:-25vw;background:var(--sky);opacity:.25;animation:d 34s ease-in-out infinite alternate}
+  @keyframes d{to{transform:translate(6vw,5vh) scale(1.08)}}
+  main{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:56px 22px 80px}
+  header{display:flex;gap:22px;align-items:center;margin-bottom:34px}
+  header img{width:96px;height:96px;filter:drop-shadow(0 14px 30px rgba(27,44,193,.6))}
+  .kicker{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--sky);font-weight:700}
+  h1{margin:4px 0 6px;font-size:32px;letter-spacing:-.02em;line-height:1.15}
+  .lead{margin:0;color:rgba(255,255,255,.72)}
+  .glass{background:rgba(118,146,255,.13);border:1px solid rgba(171,210,250,.22);border-radius:22px;
+    backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+    box-shadow:inset 0 1px 0 rgba(171,210,250,.25),0 18px 40px rgba(9,21,64,.45)}
+  .note{padding:14px 18px;margin-bottom:26px;display:flex;gap:12px;align-items:flex-start;font-size:14px}
+  .note b{color:var(--sky)}
+  ol{list-style:none;margin:0;padding:0;display:grid;gap:16px;counter-reset:s}
+  /* Visible par défaut : l'animation n'est qu'un bonus (mouvement réduit, aperçu…). */
+  li.step{padding:20px 22px 22px 74px;position:relative;animation:in .6s cubic-bezier(.2,.9,.3,1) backwards}
+  li.step:nth-child(2){animation-delay:.08s} li.step:nth-child(3){animation-delay:.16s} li.step:nth-child(4){animation-delay:.24s}
+  @keyframes in{from{opacity:0;transform:translateY(14px)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  li.step::before{counter-increment:s;content:counter(s);position:absolute;left:22px;top:20px;width:34px;height:34px;border-radius:50%;
+    display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--royal),var(--peri));
+    box-shadow:0 6px 16px rgba(27,44,193,.55)}
+  h2{margin:4px 0 6px;font-size:17px}
+  p{margin:0 0 10px;color:rgba(255,255,255,.75)}
+  kbd,.ui{font:600 13px -apple-system,system-ui;background:rgba(171,210,250,.16);border:1px solid rgba(171,210,250,.3);
+    border-radius:7px;padding:1px 7px;color:#fff;white-space:nowrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:10px 18px;border-radius:999px;border:1px solid rgba(171,210,250,.35);
+    background:linear-gradient(135deg,var(--royal),var(--peri));color:#fff;font-weight:700;text-decoration:none;cursor:pointer;
+    box-shadow:0 10px 24px rgba(27,44,193,.5);transition:transform .2s,box-shadow .2s}
+  .btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 30px rgba(118,146,255,.55)}
+  .btn.ghost{background:rgba(118,146,255,.16);box-shadow:none}
+  /* Maquettes des fenêtres macOS */
+  .mock{margin-top:12px;border-radius:14px;padding:14px 16px;background:rgba(9,21,64,.55);border:1px solid rgba(171,210,250,.18);font-size:13px}
+  .dialog{display:flex;gap:14px;align-items:flex-start;max-width:420px}
+  .dialog .ic{width:40px;height:40px;border-radius:10px;flex:none;background:linear-gradient(135deg,var(--royal),var(--peri));display:grid;place-items:center;font-size:20px}
+  .dialog strong{display:block;margin-bottom:3px}
+  .dialog .row{display:flex;gap:8px;margin-top:10px}
+  .dialog .row span{padding:3px 12px;border-radius:7px;background:rgba(171,210,250,.16);font-weight:600}
+  .dialog .row span.hl{background:var(--peri);box-shadow:0 0 0 3px rgba(171,210,250,.45);animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(171,210,250,.15)}}
+  .settings .path{color:rgba(255,255,255,.55);margin-bottom:8px}
+  .settings .line{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 12px;border-radius:10px;background:rgba(118,146,255,.12)}
+  .settings .line span.hl{padding:4px 12px;border-radius:7px;background:var(--peri);font-weight:700;white-space:nowrap;
+    box-shadow:0 0 0 3px rgba(171,210,250,.45);animation:pulse 1.8s ease-in-out infinite}
+  .cmd{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .cmd code{flex:1;font:13px ui-monospace,"SF Mono",Menlo,monospace;padding:11px 14px;border-radius:12px;background:rgba(9,21,64,.7);
+    border:1px solid rgba(171,210,250,.2);overflow-x:auto;white-space:nowrap;user-select:all}
+  .alt{margin-top:26px;padding:20px 22px}
+  .req{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .req div{padding:14px 16px;font-size:13px}
+  .req b{display:block;color:var(--sky);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,30px);opacity:0;padding:10px 18px;border-radius:999px;
+    background:rgba(27,44,193,.85);border:1px solid rgba(171,210,250,.4);font-weight:600;transition:.35s cubic-bezier(.2,.9,.3,1);z-index:5}
+  .toast.on{transform:translate(-50%,0);opacity:1}
+  footer{margin-top:34px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)}
+  @media (max-width:640px){.req{grid-template-columns:1fr} header{flex-direction:column;align-items:flex-start}}
+</style></head><body>
+<div class="bg"><i></i><i></i><i></i></div>
+<main>
+  <header>
+    <img src="data:image/png;base64,{{ICON}}" alt="">
+    <div>
+      <div class="kicker">Version {{VERSION}}</div>
+      <h1>Bienvenue dans VidaaInstall</h1>
+      <p class="lead">macOS bloque toute app qui ne vient pas de l'App Store à sa première ouverture. C'est normal, et ça se règle en 30 secondes, une seule fois.</p>
+    </div>
+  </header>
+
+  <div class="note glass">⚠️ <div>Le bouton <b>« Ouvrir quand même »</b> n'apparaît dans Réglages <b>qu'après</b> une première tentative d'ouverture, et reste disponible environ une heure. Fais les étapes dans l'ordre.</div></div>
+
+  <ol>
+    <li class="step glass">
+      <h2>Copie l'app dans Applications</h2>
+      <p>Dans la fenêtre du disque, glisse l'icône <span class="ui">VidaaInstall</span> sur le dossier <span class="ui">Applications</span>.</p>
+    </li>
+
+    <li class="step glass">
+      <h2>Ouvre-la une première fois</h2>
+      <p>Double-clique sur VidaaInstall dans <span class="ui">Applications</span>. macOS refuse et affiche :</p>
+      <div class="mock dialog">
+        <div class="ic">📺</div>
+        <div><strong>« VidaaInstall » n'a pas été ouvert</strong>
+          Apple n'a pas pu confirmer que « VidaaInstall » ne contenait pas de logiciel malveillant.
+          <div class="row"><span class="hl">Terminé</span><span>Placer dans la corbeille</span></div></div>
+      </div>
+      <p style="margin-top:10px">Clique sur <span class="ui">Terminé</span> (ou <span class="ui">OK</span>). Surtout pas « Placer dans la corbeille ».</p>
+    </li>
+
+    <li class="step glass">
+      <h2>Autorise-la dans Réglages</h2>
+      <p>Ouvre <span class="ui">Réglages Système</span> → <span class="ui">Confidentialité et sécurité</span>, puis descends jusqu'à la rubrique <b>Sécurité</b>.</p>
+      <a class="btn" href="x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension">⚙️ Ouvrir Confidentialité et sécurité</a>
+      <div class="mock settings">
+        <div class="path">Réglages Système › Confidentialité et sécurité › Sécurité</div>
+        <div class="line"><span>L'ouverture de « VidaaInstall » a été bloquée car l'app ne provient pas d'un développeur identifié.</span><span class="hl">Ouvrir quand même</span></div>
+      </div>
+      <p style="margin-top:10px">Clique sur <span class="ui">Ouvrir quand même</span>, saisis ton mot de passe (ou Touch ID), puis confirme <span class="ui">Ouvrir</span>.</p>
+    </li>
+
+    <li class="step glass">
+      <h2>Laisse-la parler au téléviseur</h2>
+      <p>Au premier lancement, macOS demande si VidaaInstall peut <b>trouver des appareils sur le réseau local</b> : réponds <span class="ui">Autoriser</span>. Sans ça, elle ne voit pas le TV.</p>
+      <p>Ensuite : écran <span class="ui">Téléviseurs</span> → <span class="ui">Rechercher</span> → <span class="ui">Appairer</span>, et tape le code à 4 chiffres affiché sur le TV.</p>
+    </li>
+  </ol>
+
+  <section class="alt glass">
+    <h2>Plus rapide : par le Terminal</h2>
+    <p>Une fois l'app copiée dans Applications, colle cette ligne dans <span class="ui">Terminal</span> puis appuie sur <kbd>Entrée</kbd>. Elle retire le blocage, sans passer par Réglages.</p>
+    <div class="cmd"><code id="cmd">xattr -dr com.apple.quarantine /Applications/VidaaInstall.app &amp;&amp; open /Applications/VidaaInstall.app</code>
+      <button class="btn ghost" id="copy">Copier</button></div>
+  </section>
+
+  <div class="req">
+    <div class="glass"><b>Mac</b>Apple Silicon ou Intel</div>
+    <div class="glass"><b>Système</b>macOS 14 Sonoma ou plus récent</div>
+    <div class="glass"><b>Réseau</b>Même Wi-Fi que le téléviseur Hisense VIDAA</div>
+  </div>
+
+  <footer>Rien d'autre à installer : tout est dans l'app.</footer>
+</main>
+<div class="toast" id="toast">Commande copiée ✓</div>
+<script>
+  document.getElementById('copy').addEventListener('click', function(){
+    var t = document.getElementById('cmd').textContent, ok = false;
+    function done(){ var e = document.getElementById('toast'); e.classList.add('on'); setTimeout(function(){ e.classList.remove('on'); }, 1800); }
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(t).then(done, fallback); } else { fallback(); }
+    function fallback(){
+      var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select();
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(a); if (ok) done();
+    }
+  });
+</script>
+</body></html>

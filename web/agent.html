@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VidaaInstall</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#091540;color:#ffffff;
+    font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;cursor:none;user-select:none}
+  .blob{position:fixed;border-radius:50%;filter:blur(14vh);opacity:.7;z-index:0}
+  #b1{width:70vw;height:70vw;left:-15vw;top:-25vw;background:#1b2cc1;animation:d1 22s ease-in-out infinite alternate}
+  #b2{width:60vw;height:60vw;right:-15vw;bottom:-30vw;background:#7692ff;animation:d2 26s ease-in-out infinite alternate}
+  #b3{width:40vw;height:40vw;left:45vw;top:-10vw;background:#abd2fa;opacity:.45;animation:d1 30s ease-in-out infinite alternate-reverse}
+  @keyframes d1{to{transform:translate(12vw,10vh) scale(1.1)}}
+  @keyframes d2{to{transform:translate(-10vw,-12vh) scale(.92)}}
+  #scrim{position:fixed;inset:0;z-index:1;background:linear-gradient(180deg,rgba(9,21,64,.25),rgba(9,21,64,.75))}
+  main{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:4vh;text-align:center}
+  .kicker{font-size:1.5vh;letter-spacing:.45em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:600}
+  h1{margin:0;font-size:5.4vh;font-weight:200;letter-spacing:-.02em}
+  h1 b{font-weight:700;background:linear-gradient(92deg,#7692ff,#abd2fa);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .orb{position:relative;width:24vh;height:24vh}
+  .orb .halo{position:absolute;inset:-10%;border-radius:50%;background:linear-gradient(135deg,#1b2cc1,#7692ff);
+    filter:blur(5vh);opacity:.6;animation:breath 3.2s ease-in-out infinite}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:.7vh solid rgba(255,255,255,.1);
+    border-top-color:#7692ff;border-right-color:#abd2fa;animation:spin 6s linear infinite}
+  .orb .core{position:absolute;inset:22%;border-radius:50%;background:rgba(118,146,255,.16);
+    border:1px solid rgba(171,210,250,.35);backdrop-filter:blur(2vh) saturate(1.6);box-shadow:inset 0 .6vh 1.4vh rgba(171,210,250,.25);display:flex;align-items:center;justify-content:center;
+    font-size:5vh;font-weight:700;transition:background .4s}
+  body.busy .orb .ring{animation-duration:.8s}
+  body.busy .orb .halo{animation-duration:.9s;opacity:.9}
+  body.ok .orb .ring{border-color:#abd2fa;animation:none}
+  body.ok .orb .halo{background:#abd2fa}
+  body.err .orb .ring{border-color:#ffffff;animation:none}
+  body.err .orb .halo{background:#7692ff}
+  body.ok .orb .core{background:rgba(171,210,250,.18)}
+  body.err .orb .core{background:rgba(118,146,255,.22)}
+  .pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes breath{50%{transform:scale(1.08)}}
+  @keyframes pop{from{transform:scale(.4);opacity:0}}
+  @keyframes rise{from{transform:translateY(2vh);opacity:0}}
+  #title{font-size:3vh;font-weight:600;animation:rise .45s ease-out}
+  #detail{font-size:2vh;color:rgba(255,255,255,.6);line-height:1.6;min-height:7vh;animation:rise .55s ease-out}
+  #detail .ok{color:#abd2fa} #detail .err{color:#ffffff;font-weight:600}
+  .foot{position:fixed;bottom:4vh;left:0;right:0;z-index:2;text-align:center;font-size:1.5vh;color:rgba(255,255,255,.35);letter-spacing:.06em}
+</style></head><body>
+<div class="blob" id="b1"></div><div class="blob" id="b2"></div><div class="blob" id="b3"></div><div id="scrim"></div>
+<main>
+  <div class="kicker">téléviseur</div>
+  <h1>Vidaa<b>Install</b></h1>
+  <div class="orb"><div class="halo"></div><div class="ring"></div><div class="core" id="core">TV</div></div>
+  <div id="title">Prêt</div>
+  <div id="detail">en attente d'une commande du Mac…</div>
+</main>
+<div class="foot" id="foot">laisse cette page ouverte pendant l'installation</div>
+<script>
+(function(){
+  'use strict';
+  var APPINFO = 'websdk/Appinfo.json';
+  var MODE = 6;
+  var token = (location.search.match(/[?&]t=([^&]*)/) || [])[1] || '';
+  var H = window.HiUtils_createRequest;
+  var body = document.body;
+  var core = document.getElementById('core');
+  var titleEl = document.getElementById('title');
+  var detailEl = document.getElementById('detail');
+  var footEl = document.getElementById('foot');
+  var lastActivity = Date.now();
+
+  function replay(el){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
+  function setView(state, title, lines, glyph){
+    body.className = state;
+    titleEl.textContent = title; replay(titleEl);
+    detailEl.innerHTML = '';
+    (lines || []).forEach(function(l){
+      var d = document.createElement('div');
+      d.className = state === 'ok' ? 'ok' : (state === 'err' ? 'err' : '');
+      d.textContent = l;
+      detailEl.appendChild(d);
+    });
+    replay(detailEl);
+    core.textContent = glyph;
+    core.classList.remove('pop'); void core.offsetWidth; core.classList.add('pop');
+  }
+  function showIdle(){ setView('', 'Prêt', ['en attente d’une commande du Mac…'], 'TV'); }
+
+  if (typeof H !== 'function') {
+    footEl.textContent = 'HiUtils_createRequest indisponible — ouvre cette page sur le téléviseur';
+  }
+
+  function readRaw(){
+    if (typeof H !== 'function') throw new Error('API HiUtils indisponible dans ce navigateur');
+    var r = H('fileRead', { path: APPINFO, mode: MODE });
+    if (!r || !r.ret) throw new Error('lecture impossible : ' + ((r && r.msg) || 'sans réponse'));
+    return r.msg;
+  }
+  function writeRaw(text){
+    var r = H('fileWrite', { path: APPINFO, mode: MODE, writedata: text });
+    if (!r || !r.ret) throw new Error('écriture refusée : ' + ((r && r.msg) || 'sans réponse'));
+  }
+  function today(){
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  // Chaque écriture renvoie le fichier d'avant (« backup ») : le Mac le sauvegarde.
+  function exec(cmd){
+    var p = cmd.params || {};
+    var raw, doc, list, i;
+    switch (cmd.action) {
+
+      case 'list':
+        doc = JSON.parse(readRaw());
+        list = doc.AppInfo || [];
+        return { ok: true, apps: list, total: list.length, msg: list.length + ' applications' };
+
+      case 'backup':
+        raw = readRaw();
+        doc = JSON.parse(raw);
+        return { ok: true, backup: raw, total: (doc.AppInfo || []).length, msg: 'Copie envoyée au Mac' };
+
+      case 'install':
+        raw = readRaw();
+        doc = JSON.parse(raw);
+        list = doc.AppInfo || [];
+        var entry = {
+          Id: p.Id, AppName: p.AppName, Title: p.AppName,
+          URL: p.URL, StartCommand: p.URL,
+          IconURL: p.IconURL || '', Icon_96: p.IconURL || '',
+          Image: p.IconURL || '', Thumb: p.IconURL || '',
+          Type: 'Browser', InstallTime: today(), RunTimes: 0,
+          StoreType: p.StoreType || 'custom', PreInstall: false,
+          configUrl: '', configUrlDownload: 0,
+          mediaId: 0, initialFrom: '',
+          appInfo: { url: p.URL, name: p.AppName }
+        };
+        i = list.findIndex(function(a){ return a.Id === p.Id; });
+        var replaced = i >= 0;
+        if (replaced) { list[i] = entry; } else { list.push(entry); }
+        doc.AppInfo = list;
+        writeRaw(JSON.stringify(doc));
+        return { ok: true, replaced: replaced, total: list.length, backup: raw, apps: list,
+                 msg: (replaced ? 'Entrée remplacée' : 'Nouvelle entrée ajoutée') };
+
+      case 'uninstall':
+        raw = readRaw();
+        doc = JSON.parse(raw);
+        list = doc.AppInfo || [];
+        var before = list.length;
+        doc.AppInfo = list.filter(function(a){ return a.Id !== p.Id; });
+        if (doc.AppInfo.length === before) throw new Error('application introuvable : ' + p.Id);
+        writeRaw(JSON.stringify(doc));
+        return { ok: true, total: doc.AppInfo.length, backup: raw, apps: doc.AppInfo, msg: 'Entrée supprimée' };
+
+      case 'restore':
+        var next = JSON.parse(p.data || '');
+        if (!next || !Array.isArray(next.AppInfo)) throw new Error('sauvegarde invalide (AppInfo absent)');
+        raw = readRaw();
+        writeRaw(p.data);
+        return { ok: true, total: next.AppInfo.length, backup: raw, apps: next.AppInfo, msg: 'Sauvegarde restaurée' };
+
+      default:
+        throw new Error('commande inconnue : ' + cmd.action);
+    }
+  }
+
+  var TITLES = {
+    list: 'Lecture de la liste',
+    backup: 'Sauvegarde',
+    install: 'Installation',
+    uninstall: 'Désinstallation',
+    restore: 'Restauration'
+  };
+
+  function poll(){
+    if (Date.now() - lastActivity > 180000) { lastActivity = Date.now(); showIdle(); }
+    fetch('/pending?t=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(function(r){
+        if (r.status === 403) {
+          footEl.textContent = 'session expirée — le Mac va rouvrir la page';
+          setTimeout(poll, 3000);
+          return null;
+        }
+        return r.json();
+      })
+      .then(function(cmd){
+        if (cmd === null) return;
+        if (!cmd || !cmd.action) { setTimeout(poll, 600); return; }
+        lastActivity = Date.now();
+        var title = TITLES[cmd.action] || cmd.action;
+        setView('busy', title, ['en cours…'], '…');
+        var res;
+        try {
+          res = exec(cmd);
+          if (res.ok === undefined) res.ok = true;
+        } catch (e) {
+          res = { ok: false, error: String((e && e.message) || e) };
+        }
+        var lines = res.ok
+          ? [res.msg || 'opération réussie'].concat(res.total !== undefined ? [res.total + ' application(s) au total'] : [])
+          : [res.error || 'échec'];
+        setView(res.ok ? 'ok' : 'err', title, lines, res.ok ? '✓' : '!');
+        fetch('/result?t=' + encodeURIComponent(token), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: cmd.id, result: res })
+        }).catch(function(){}).then(function(){ setTimeout(poll, 300); });
+      })
+      .catch(function(){ setTimeout(poll, 1500); });
+  }
+
+  showIdle();
+  poll();
+})();
+</script></body></html>
